@@ -2,7 +2,7 @@ package ua.edu.sumdu.j2se.moskvin.tasks;
 
 public class ArrayTaskList {
     private int size = 0;
-    Task[] tasks = new Task[size];
+    private Task[] tasks = new Task[size];
 
     public void add(Task task) {
         Task[] newTasks = new Task[size + 1];
@@ -33,6 +33,7 @@ public class ArrayTaskList {
     }
 
     public Task getTask(int index) {
+        if (index < 0 || index > size - 1) throw new IndexOutOfBoundsException();
         return tasks[index];
     }
 
