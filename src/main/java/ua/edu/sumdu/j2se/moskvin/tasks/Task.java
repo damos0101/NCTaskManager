@@ -11,6 +11,7 @@ public class Task {
 
 
     public Task(String title, int time) {
+        if (time < 0) throw new IllegalArgumentException();
         this.title = title;
         this.time = time;
         isRepeated = false;
@@ -18,6 +19,7 @@ public class Task {
     }
 
     public Task(String title, int start, int end, int interval) {
+        if (start < 0 || end < 0 || interval < 0) throw new IllegalArgumentException();
         this.title = title;
         this.start = start;
         this.end = end;
@@ -76,14 +78,14 @@ public class Task {
 
     public int nextTimeAfter(int current) {
         if (isActive()) {
-            if(!isRepeated){
+            if (!isRepeated) {
                 return (time > current ? time : -1);
             }
             if (current > end) {
                 return -1;
             } else if (start > current) {
                 return start;
-            }else {
+            } else {
                 int temp = start;
                 while (current >= temp) {
                     temp += interval;
@@ -93,8 +95,7 @@ public class Task {
                 }
                 return temp;
             }
-        }
-        else {
+        } else {
             return -1;
         }
     }
