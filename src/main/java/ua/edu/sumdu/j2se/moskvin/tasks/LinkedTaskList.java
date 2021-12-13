@@ -1,7 +1,9 @@
 package ua.edu.sumdu.j2se.moskvin.tasks;
 
-public class LinkedTaskList {
-    private int size = 0;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+public class LinkedTaskList extends AbstractTaskList {
     private TaskNode head;
 
     public class TaskNode {
@@ -15,6 +17,7 @@ public class LinkedTaskList {
     }
 
     public void add(Task task) {
+        if (task == null) throw new IllegalArgumentException();
         TaskNode taskNode = new TaskNode(task);
         TaskNode current = head;
         if (head == null) {
@@ -32,7 +35,7 @@ public class LinkedTaskList {
         TaskNode current = head;
         TaskNode prev = null;
         for (int i = 0; i < size; ++i) {
-            if (current.task.getTitle() == task.getTitle()) {
+            if (current.task.equals(task)) {
                 if (current == head) {
                     head = current.next;
                 } else {
@@ -47,9 +50,6 @@ public class LinkedTaskList {
         return false;
     }
 
-    public int size() {
-        return size;
-    }
 
     public Task getTask(int index) {
         if (index < 0 || index > size - 1) throw new IndexOutOfBoundsException();
@@ -63,16 +63,63 @@ public class LinkedTaskList {
         return current.task;
     }
 
-    public LinkedTaskList incoming(int from, int to) {
-        LinkedTaskList newTaskList = new LinkedTaskList();
-        TaskNode current = head;
-        for (int i = 0; i < size; ++i) {
-            if (current.task.getStartTime() > from && current.task.getEndTime() < to && current.task.isActive()) {
-                newTaskList.add(current.task);
+    @Override
+    public Iterator<Task> iterator() {
+        return new Iterator<Task>() {
+            private int current;
+            private int removed;
+
+            @Override
+            public boolean hasNext() {
+                return current < size;
             }
-            current = current.next;
-        }
-        return newTaskList;
+
+            @Override
+            public Task next() {
+                if (hasNext()) {
+                    removed = current;
+                    return getTask(current++);
+                }
+                throw new NoSuchElementException();
+            }
+
+            @Override
+            public void remove() {
+                if (current < 1) {
+                    throw new IllegalStateException();
+                }
+                LinkedTaskList.this.remove(getTask(removed));
+                --current;
+            }
+        };
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LinkedTaskList tasks = (LinkedTaskList) o;
+        for (int i = 0; i < size; ++i) {
+            if (!tasks.getTask(i).equals(getTask(i))) return false;
+        }
+        return size == tasks.size;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        for (int i = 0; i < size; ++i) {
+            if ((getTask(i) == null)) {
+                hash = 29;
+            } else {
+                hash = 29 + getTask(i).hashCode();
+            }
+        }
+        return hash;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 }
