@@ -1,25 +1,28 @@
 package ua.edu.sumdu.j2se.moskvin.tasks;
 
-public class Task {
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+public class Task implements Cloneable {
     private String title;
-    private int time;
-    private int start;
-    private int end;
+    private LocalDateTime time;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private int interval;
     private boolean active;
     private boolean isRepeated;
 
 
-    public Task(String title, int time) {
-        if (time < 0) throw new IllegalArgumentException();
+    public Task(String title, LocalDateTime time) {
+        if (time == null) throw new IllegalArgumentException();
         this.title = title;
         this.time = time;
         isRepeated = false;
         active = false;
     }
 
-    public Task(String title, int start, int end, int interval) {
-        if (start < 0 || end < 0 || interval < 0) throw new IllegalArgumentException();
+    public Task(String title, LocalDateTime start, LocalDateTime end, int interval) {
+        if (start == null || end == null || interval < 0) throw new IllegalArgumentException();
         this.title = title;
         this.start = start;
         this.end = end;
@@ -44,20 +47,20 @@ public class Task {
         this.active = active;
     }
 
-    public int getTime() {
+    public LocalDateTime getTime() {
         return (isRepeated ? start : time);
     }
 
-    public void setTime(int time) {
+    public void setTime(LocalDateTime time) {
         isRepeated = false;
         this.time = time;
     }
 
-    public int getStartTime() {
+    public LocalDateTime getStartTime() {
         return (isRepeated ? start : time);
     }
 
-    public int getEndTime() {
+    public LocalDateTime getEndTime() {
         return (isRepeated ? end : time);
     }
 
@@ -69,34 +72,63 @@ public class Task {
         return isRepeated;
     }
 
-    public void setTime(int start, int end, int interval) {
+    public void setTime(LocalDateTime start, LocalDateTime end, int interval) {
         isRepeated = true;
         this.start = start;
         this.end = end;
         this.interval = interval;
     }
 
-    public int nextTimeAfter(int current) {
+    public LocalDateTime nextTimeAfter(LocalDateTime current) {
         if (isActive()) {
             if (!isRepeated) {
-                return (time > current ? time : -1);
+                return (time.compareTo(current) == 1 ? time : null);
             }
-            if (current > end) {
-                return -1;
-            } else if (start > current) {
+            if (current.compareTo(end) == 1) {
+                return null;
+            } else if (start.compareTo(current) == 1) {
                 return start;
             } else {
-                int temp = start;
-                while (current >= temp) {
-                    temp += interval;
+                LocalDateTime temp = start;
+                while (current.compareTo(temp) >= 0) {
+                    temp = temp.plusSeconds(interval);
                 }
-                if (temp >= end) {
-                    return -1;
+                if (temp.compareTo(end) > 0) {
+                    return null;
                 }
                 return temp;
             }
         } else {
-            return -1;
+            return null;
         }
+    }
+
+    @Override
+    public Task clone() throws CloneNotSupportedException {
+        Task cloned = (Task) super.clone();
+        cloned.title = this.title;
+        cloned.time = this.time;
+        cloned.start = this.start;
+        cloned.end = this.end;
+        cloned.interval = this.interval;
+        cloned.active = this.active;
+        cloned.isRepeated = this.isRepeated;
+        return cloned;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return time == task.time && start == task.start
+                && end == task.end && interval == task.interval
+                && active == task.active && isRepeated == task.isRepeated
+                && Objects.equals(title, task.title);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, time, start, end, interval, active, isRepeated);
     }
 }
